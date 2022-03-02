@@ -122,6 +122,7 @@ class App extends Component<IProps, IState> {
       from: this.state.account,
     });
     this.setState({ hasVoted: true });
+    return 'Vote completed';
   };
 
   render() {

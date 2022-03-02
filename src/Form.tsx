@@ -3,7 +3,7 @@ import { Candidate } from '@/App';
 
 interface IProps {
   candidates: Candidate[];
-  castVote: (candidateId: number) => void;
+  castVote: (candidateId: number) => Promise<String>;
 }
 
 interface IState {
@@ -25,14 +25,15 @@ class From extends Component<IProps, IState> {
     this.setState({ candidateId: e.target.value });
   };
 
+  handleSubmit = async (event: any) => {
+    event.preventDefault();
+    let returnstring = await this.props.castVote(this.state.candidateId);
+    console.log(returnstring);
+  };
+
   render() {
     return (
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          this.props.castVote(this.state.candidateId);
-        }}
-      >
+      <form onSubmit={this.handleSubmit}>
         <div className="form-group">
           <label>Select Candidate</label>
           <select onChange={this.selectValueOnchange} className="form-control">

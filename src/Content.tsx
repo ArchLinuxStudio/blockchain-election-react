@@ -7,7 +7,7 @@ interface IProps {
   account: string;
   hasVoted: boolean;
   candidates: Candidate[];
-  castVote: (candidateId: number) => void;
+  castVote: (candidateId: number) => Promise<String>;
 }
 
 interface IState {}
