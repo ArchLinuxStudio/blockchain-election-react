@@ -25,8 +25,6 @@ interface IState {
   electionInstance: {};
 }
 
-const a = 1;
-
 class App extends Component<IProps, IState> {
   state = {
     account: '0x0',
