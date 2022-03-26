@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.4.22;
+pragma solidity >=0.8.0;
 
 contract Election {
     // Model a Candidate
@@ -20,7 +20,7 @@ contract Election {
     // voted event
     event votedEvent(uint256 indexed _candidateId);
 
-    constructor() public {
+    constructor() {
         addCandidate("Candidate 1");
         addCandidate("Candidate 2");
     }
