@@ -55,36 +55,48 @@ class App extends Component<IProps, IState> {
 
   componentDidMount = async () => {
     if (window.ethereum) {
+      // connect metamask
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      // create web3
       let web3 = new Web3(window.ethereum);
-      let web3Provider = web3.currentProvider;
-      //can not use import for @truffle/contract in typescript now
-      const TruffleContract = require('@truffle/contract');
-      let election = TruffleContract(Election);
-      election.setProvider(web3Provider);
-
-      let accounts = await web3.eth.getAccounts();
-      // console.log(accounts?.[0]);
-      let electionInstance = await election.deployed();
-
-      await this.fetchCandidatesData(electionInstance);
-
-      let hasVoted = await electionInstance.voters(accounts?.[0]);
-      this.setState(
-        {
-          account: accounts?.[0],
-          electionInstance,
-          hasVoted,
-          loading: false,
-        },
-        () => {
-          this.watchEvents();
-        }
-      );
+      this.initApp(web3);
     } else {
+      let web3 = new Web3(
+        new Web3.providers.HttpProvider('http://localhost:7545')
+      );
+      let accounts = await web3.eth.getAccounts();
+      console.log(accounts);
+      this.initApp(web3);
       alert(
-        'Please install an Ethereum-compatible browser or extension like MetaMask to use this dApp!'
+        'Please install an Ethereum-compatible browser or extension like MetaMask to use this dApp! Try to use localhost ganache now.'
       );
     }
+  };
+
+  initApp = async (web3: any) => {
+    //can not use import for @truffle/contract in typescript now
+    const TruffleContract = require('@truffle/contract');
+    let election = TruffleContract(Election);
+    election.setProvider(web3.currentProvider);
+
+    let accounts = await web3.eth.getAccounts();
+    // console.log(accounts[0]);
+    let electionInstance = await election.deployed();
+
+    await this.fetchCandidatesData(electionInstance);
+
+    let hasVoted = await electionInstance.voters(accounts?.[0]);
+    this.setState(
+      {
+        account: accounts?.[0],
+        electionInstance,
+        hasVoted,
+        loading: false,
+      },
+      () => {
+        this.watchEvents();
+      }
+    );
   };
 
   watchEvents = async () => {
@@ -116,10 +128,19 @@ class App extends Component<IProps, IState> {
 
   castVote = async (candidateId: number) => {
     this.setState({ voting: true });
-    await this.state.electionInstance.vote(candidateId, {
+    console.log('vote now');
+    let ret = await this.state.electionInstance.vote(candidateId, {
       from: this.state.account,
     });
+    console.log('ret: ' + JSON.stringify(ret));
+
     this.setState({ hasVoted: true });
+    // when use localhost ganache web3, the browser can not react with event.
+    // do it manually
+    if (!window.ethereum && ret.logs?.[0]?.event === 'votedEvent') {
+      await this.fetchCandidatesData(this.state.electionInstance);
+      this.setState({ voting: false });
+    }
     return 'Vote completed';
   };
 
